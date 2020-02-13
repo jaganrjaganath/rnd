@@ -137,9 +137,6 @@ destroy(this.st_2)
 destroy(this.st_1)
 end on
 
-event open;//rnd2
-end event
-
 type cb_12 from commandbutton within w_rnd
 integer x = 160
 integer y = 520
