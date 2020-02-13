@@ -137,7 +137,7 @@ destroy(this.st_2)
 destroy(this.st_1)
 end on
 
-event open;//rnd2
+event open;//rnd3
 end event
 
 type cb_12 from commandbutton within w_rnd
