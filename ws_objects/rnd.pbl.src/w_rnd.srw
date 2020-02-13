@@ -137,11 +137,7 @@ destroy(this.st_2)
 destroy(this.st_1)
 end on
 
-//<<<<<<< HEAD
-event open;//rnd3
-//=======
 event open;//rnd1
-//>>>>>>> master
 end event
 
 type cb_12 from commandbutton within w_rnd
