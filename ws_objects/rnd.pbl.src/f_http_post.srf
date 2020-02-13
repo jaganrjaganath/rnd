@@ -1,0 +1,48 @@
+﻿$PBExportHeader$f_http_post.srf
+global type f_http_post from function_object
+end type
+
+forward prototypes
+global function boolean f_http_post (string url, string data, string header[], ref string result)
+end prototypes
+
+global function boolean f_http_post (string url, string data, string header[], ref string result);OLEObject oleHTTP
+Integer li_rc, httpstatus, i
+string responseBody, responseText, responseXML
+
+// connect to the OLE object
+oleHTTP = CREATE OLEObject
+li_rc = oleHTTP.ConnectToNewObject("Msxml2.XMLHTTP.6.0")
+If li_rc < 0 Then
+	result = oleHTTP.of_ConnectError(li_rc)
+	Return False
+End If
+
+try
+	// Initialize the request
+	oleHTTP.open("POST", url, False)
+	for i = 1 to upperBound(header)
+		oleHTTP.setRequestHeader(trim(mid(header[i], 1, pos(header[i], ':') - 1)), trim(mid(header[i], pos(header[i], ':') + 1)))
+	next 
+	oleHTTP.send(data)
+	httpstatus = oleHTTP.status
+	responseBody = fromutf8(oleHTTP.responseBody)
+	responseText = oleHTTP.responseText
+catch ( OLERuntimeError err )
+	httpstatus = oleHTTP.status
+	PopulateError(err.Number, err.Text)
+	Error.Line = err.Line
+end try
+
+// disconnect from the OLE object
+oleHTTP.DisconnectObject()
+Destroy oleHTTP
+
+If httpstatus = 200 Then
+	result = responseBody
+	Return True
+End If
+
+Return False
+end function
+

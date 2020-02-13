@@ -1,0 +1,64 @@
+﻿$PBExportHeader$f_set_json_value_dw.srf
+global type f_set_json_value_dw from function_object
+end type
+
+forward prototypes
+global subroutine f_set_json_value_dw (ref datawindow ds_1, string ls_json)
+end prototypes
+
+global subroutine f_set_json_value_dw (ref datawindow ds_1, string ls_json);long ll_loop,i, j
+long ll_row  
+long ll_root,ll_object,ll_item
+string ls_error
+string ls_return
+string ls_key
+string ls_array_value
+String ls_log_file_name
+String ls_message
+ls_message = 'time : '+string( now(),'hh:mm:ss:fff')
+//ls_log_file_name = gs_path + '\JsonImpErr\Log_' + String(f_server_datetime(),'yyyy_mm_dd') + '.txt'
+jsonparser lnv_jsonparser
+lnv_jsonparser = create jsonparser
+ls_error= lnv_jsonparser.loadstring(ls_json)
+if len(trim(ls_error)) > 0 then
+   //messagebox("Failed","load json failed:"+ls_error)        
+	ls_message = ls_message + ' load json failed : ' +ls_error
+	//f_write_to_log(ls_log_file_name ,ls_message)	
+Else
+    ll_root = lnv_jsonparser.getrootitem()
+	//Obtains the data of each row
+	for ll_loop = 1 to lnv_jsonparser.getchildcount(ll_root)
+				//Obtains the handle of each row
+				ll_object = lnv_jsonparser.getchilditem(ll_root,ll_loop)
+				//Inserts a row into datawindow
+				ll_row = ds_1.insertrow(0)
+				//Parses the item value one by one in a row in a loop
+				for i = 1 to lnv_jsonparser.getchildcount(ll_object)
+							 //Obtains the handle and key of each item
+							 ll_item = lnv_jsonparser.getchilditem(ll_object,i)
+							 ls_key = lnv_jsonparser.getchildkey(ll_object,i)					
+							 //Checks the data type of each item
+							 choose case lnv_jsonparser.getitemtype(ll_item)
+										 case jsonarrayitem!//,jsonobjectitem!
+											 //messagebox("Error","Not standard datatype") //Item value cannot be inserted to datawindow									
+										 case jsonnumberitem!
+													 //Obtains number data
+													 ds_1.setitem(ll_row,i,lnv_jsonparser.getitemnumber(ll_item))
+													 //ds_1.setitem(ll_row,ls_key,lnv_jsonparser.getitemnumber(ll_object,ls_key)) or set data by column name
+										 case jsonstringitem!
+													 //Obtains string data
+													 ds_1.setitem(ll_row,i,lnv_jsonparser.getitemstring(ll_item))
+										 case jsonbooleanitem!
+													 //Obtains boolean data. boolean converted to string and inserted to datawindow
+													 ds_1.setitem(ll_row,i,string(lnv_jsonparser.getitemboolean(ll_item)))
+										 case jsonnullitem!
+													 //null value. Not inserted to datawindow.             
+							 end choose
+				next  //Finish parsing one row
+	next//Start parsing next row
+End If
+ds_1.AcceptText()
+
+
+end subroutine
+
